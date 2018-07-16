@@ -10,17 +10,30 @@ class CoxProcess(Checks):
 
     # .. image:: _static/poisson_process.png
         # :scale: 50%
-    A Poisson process whose rate function is another stochastic process. If lambdaa is a NHPPy/stochastic class, it automatically creates a new lambdaa on every sample generation. Otherwise, if lambda is a list, it has to be generated manually every iteration. and this class would be functionally identical to the NHPP class.
+    A Poisson process whose rate function is another stochastic process. Lambdaa has to be a NHPPy/stochastic class, it automatically creates a new lambdaa on every sample generation. Otherwise, the NHPP class can be used to generate a Cox process if realizations are given to an NHPP instance as the lambda parameter.
 
     :param class infoprocess: class from the NHPPy/stochastic that enables the sampling of a stochastic process. Normally, one that outputs
     :param list of floats infoparams: Parameters to input into the information process
+    :param float infolength: Length for which to generate a realization of the information process.
     """
 
-    def __init__(self, infoprocess,infoparams):
+    def __init__(self,infoprocess,infoparams,infolength):
         self.infoprocess=infoprocess
         self.infoparams=infoparams
+        self.infolength=infolength
         self._check_child(self.infoprocess)
-
+        self.genrate()
+        
+    @property
+    def infolength(self):
+        """Current rate's random distribution."""
+        return self._length
+        
+    @length.setter
+    def infolength(self,value):
+        """Current rate's random distribution."""
+        self._length=value     
+        
     @property
     def infoprocess(self):
         """Current rate's random distribution."""
@@ -49,18 +62,16 @@ class CoxProcess(Checks):
         
     @property
     def lambdaa(self):
-        """Current stochastically generated rate."""
+        """Current stochastically generated rate over time."""
         return self._lambdaa
         
     @lambdaa.setter
     def lambdaa(self, value):
-        infoprocess, infoparams= value 
+        infoprocess, infoparams = value 
         self._infoprocess= infoprocess
         currentprocess=self._infoprocess(self._infoparams)
-        self.lambdaa =currentprocess.sample(n)
-        
-    def genrate(self):
-        self._rate=self.ratedist(*self.ratedistparams)
+        self.lambdaa =currentprocess.sample(length=length)
+       
 
     def _sample_poisson_process(self, n=None, length=None, zero=True):
         """Generate a realization of a Mixed Poisson process.
@@ -121,13 +132,16 @@ class CoxProcess(Checks):
 # hat to do about instances of non continuous processes
 class MyClass:
     """A simple example class"""
+    
     i = 12345
-
+    def __init__(self,a):
+        return 
     def f(self):
         return 'hello world'
 from poisson import PoissonProcess
 from stochastic.base import Continuous
 A=CoxProcess(PoissonProcess,1)
+print(A.lambdaa)
 sys.exit()
 # A=PoissonProcess(2)
 print(isinstance(A,Continuous))
