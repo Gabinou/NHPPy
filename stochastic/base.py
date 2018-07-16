@@ -30,7 +30,6 @@ class Checks(object):
             raise TypeError("Zero inclusion flag must be a boolean.")
             
     def _check_child(self, classorinstance):
-        print(inspect.isclass(classorinstance))
         if inspect.isclass(classorinstance):   
             if (not issubclass(classorinstance,Checks)) & (not issubclass(classorinstance,Continuous))  :
                 raise TypeError("Given class instance must be part of the NHPPy/stochastic package.")        

@@ -1,7 +1,7 @@
 """Cox processes. Doubly stochastic poisson processes."""
 import inspect
 import sys
-import numpy as np
+import numpy as np, scipy.interpolate
 
 from stochastic.base import Checks
 
@@ -13,7 +13,7 @@ class CoxProcess(Checks):
     A Poisson process whose rate function is another stochastic process. Lambdaa has to be a NHPPy/stochastic class, it automatically creates a new lambdaa on every sample generation. Otherwise, the NHPP class can be used to generate a Cox process if realizations are given to an NHPP instance as the lambda parameter.
 
     :param class infoprocess: class from the NHPPy/stochastic that enables the sampling of a stochastic process. Normally, one that outputs
-    :param list of floats infoparams: Parameters to input into the information process
+    :param list infoparams: Parameters to input into the information process
     :param float infolength: Length for which to generate a realization of the information process.
     """
 
@@ -22,17 +22,17 @@ class CoxProcess(Checks):
         self.infoparams=infoparams
         self.infolength=infolength
         self._check_child(self.infoprocess)
-        self.genrate()
+        self.lambdaa= (infoprocess,infoparams,infolength)
         
     @property
     def infolength(self):
         """Current rate's random distribution."""
-        return self._length
+        return self._infolength
         
-    @length.setter
+    @infolength.setter
     def infolength(self,value):
         """Current rate's random distribution."""
-        self._length=value     
+        self._infolength=value     
         
     @property
     def infoprocess(self):
@@ -43,8 +43,8 @@ class CoxProcess(Checks):
     def infoprocess(self, value):
         self._infoprocess = value
         if (hasattr(self,'_infoprocess')) & (hasattr(self,'_infoparams')) : 
-            currentprocess=self._infoprocess(self._infoparams)
-            self.lambdaa =currentprocess.sample(n)
+            infoinstance=self._infoprocess(self._infoparams)
+            self.lambdaa =infoinstance.sample(n)
 
     @property
     def infoparams(self):
@@ -67,49 +67,45 @@ class CoxProcess(Checks):
         
     @lambdaa.setter
     def lambdaa(self, value):
-        infoprocess, infoparams = value 
+        infoprocess, infoparams, infolength = value 
         self._infoprocess= infoprocess
-        currentprocess=self._infoprocess(self._infoparams)
-        self.lambdaa =currentprocess.sample(length=length)
-       
+        infoinstance=self._infoprocess(self._infoparams)
+        self._lambdaa=infoinstance.sample(length=self._infolength)
+    
+    def genrate(self):
+        infoinstance=self._infoprocess(self._infoparams)
+        self._lambdaa=infoinstance.sample(length=self._infolength)
 
-    def _sample_poisson_process(self, n=None, length=None, zero=True):
-        """Generate a realization of a Mixed Poisson process.
+    def _sample_poisson_process(self, n=None,length=None, blocksize=1000):
+        """Generate a realization of a Non-homogeneous Poisson process using the Thinning/acceptance-rejection algorithm.
 
-        Generate a poisson process sample up to count of length if time=False,
-        otherwise generate a sample up to time t=length if time=True
+        Stops the generation either if n samples are generated in the length interval, or if a sample is generated outside the length interval.
         """
-        
-        if n is not None:
-            self._check_increments(n)
-
-            exponentials = np.random.exponential(
-                scale=1.0 / self.rate, size=n)
-
-            s = np.array([0] + list(np.cumsum(exponentials)))
-            if zero:
-                return s
-            else:
-                return s[1:]
-        elif length is not None:
-            self._check_positive_number(length, "Sample length")
-
-            t = 0
-            times = []
-            if zero:
-                times.append(0)
-            exp_rate = 1.0 / self.rate
-
-            while t < length:
-                t += np.random.exponential(scale=exp_rate)
-                times.append(t)
-            return np.array(times)
-            
+        if self.lambdaa[-1]>length:
+            Time=np.arange(0,length,length/1000)
         else:
-            raise ValueError(
-                "Must provide either argument n or length.")
-
-    def sample(self, n=None, length=None, zero=True):
+            Time=np.arange(0,self.lambdaa[-1],self.lambdaa[-1]/1000)
+        Conditionn,Conditionlength=0,0
+        flambdaa=scipy.interpolate.interp1d(self.lambdaa,np.cumsum(self.lambdaa>0),kind='cubic')
+        lambdamax=np.amax(flambdaa(Time))
+        AllDeltaT=[]
+        while (Conditionn | Conditionlength)==0:
+            U1=np.random.uniform(size=blocksize)
+            deltaT=-np.log(U1)/lambdamax
+            AllDeltaT=np.append(AllDeltaT,deltaT)
+            UThinned=np.cumsum(AllDeltaT)
+            UnThinned=UThinned[UThinned<Time[-1]]
+            Criteria=flambdaa(UnThinned)/lambdamax
+            Conditionlength+=UThinned[-1]>Time[-1]  
+            U2=np.random.uniform(size=len(UnThinned))
+            TooManyThinned=UnThinned[U2<Criteria]
+            Conditionn+=len(TooManyThinned)>n
+            Cumul=TooManyThinned[:n]
+            if (Conditionlength) & (len(Cumul)<n):
+                Cumul=np.append(Cumul,np.zeros(n-len(Cumul)))
+        return(Cumul)
+    
+    def sample(self, n=None,length=None):
         """Generate a realization.
 
         Exactly one of the following parameters must be provided.
@@ -119,15 +115,16 @@ class CoxProcess(Checks):
             arrivals until length is met or exceeded.
         :param bool zero: if True, include :math:`t=0`
         """
-        out=self._sample_poisson_process(n, length, zero)
-        self._rate = self._ratedist(*self._ratedistparams) 
-        """Generate a new random rate upon each realization."""
-        self._check_nonnegative_number(self._rate, "Arrival rate")
+        
+
+        out= self._sample_poisson_process(n,length)
+        """Generate a new random information process realization upon each Cox realization."""
+        self.genrate()
         return out
 
     def times(self, *args, **kwargs):
         """Disallow times for this process."""
-        raise AttributeError("MixedPoissonProcess object has no attribute times.")
+        raise AttributeError("CoxProcess object has no attribute times.")
 # logic to checking if the passed instance to the cox process is legit: Checks OR continuous are parents of all process. Checks is parents of all processes. So just checking isinstance of checks SHOULD be enough.
 # hat to do about instances of non continuous processes
 class MyClass:
@@ -140,8 +137,11 @@ class MyClass:
         return 'hello world'
 from poisson import PoissonProcess
 from stochastic.base import Continuous
-A=CoxProcess(PoissonProcess,1)
-print(A.lambdaa)
+A=CoxProcess(PoissonProcess,1,100)
+# print(A.lambdaa)
+# print(A.genrate())
+# print(A.lambdaa)
+print(A.sample(n=10,length=1000))
 sys.exit()
 # A=PoissonProcess(2)
 print(isinstance(A,Continuous))
