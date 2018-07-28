@@ -78,16 +78,7 @@ class MixedPoissonProcess(PoissonProcess):
             self._check_nonnegative_number(self._rate, "Arrival rate")
 
     def sample(self, n=None, length=None, zero=True):
-        """Generate a realization.
-
-        Exactly one of the following parameters must be provided.
-
-        :param int n: the number of arrivals to simulate
-        :param int length: the length of time to simulate; will generate
-            arrivals until length is met or exceeded.
-        :param bool zero: if True, include :math:`t=0`
-        """
-        out=self._sample_poisson_process(n, length, zero)
+        out=super().sample(n, length, zero)
         self.gen_rate()
         """Generate a new random rate upon each realization."""
         return out
