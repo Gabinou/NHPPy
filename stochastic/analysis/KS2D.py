@@ -12,16 +12,9 @@
 import sys
 import os
 import inspect
-import logging
 
 import numpy as np
 import scipy.stats
-
-logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
-                    datefmt='%Y/%m/%d %H:%M:%S',
-                    filename='example.log',
-                    level=logging.DEBUG)
-
 
 def CountQuads(Arr2D, point):
     """ Computes the probabilities of finding points in each 4 quadrant
@@ -36,33 +29,24 @@ def CountQuads(Arr2D, point):
     negative, with the first and second positions meaning the x and y
     directions respectively.
     """
-    logging.info('CountQuads function. Counts points in quadrants that' +
-                 ' surround a point using with an array of 2D points.')
     # A bit of checking. If Arr2D and point are not lists or ndarray, exit.
     if isinstance(point, list):
-        logging.info('point is a list')
         point = np.asarray((np.ravel(point)))
     elif type(point).__module__+type(point).__name__ == 'numpyndarray':
         point = np.ravel(point.copy())
-        logging.info('point is a numpy.ndarray')
     else:
-        logging.error('point is neither a list not a numpy.ndarray. Exiting.')
         return
     if len(point) != 2:
-        logging.error('2 elements should be in point. Exiting.')
         return
     if isinstance(Arr2D, list):
-        logging.info('Arr2D is a list')
         Arr2D = np.asarray((Arr2D))
     elif type(Arr2D).__module__+type(Arr2D).__name__ == 'numpyndarray':
-        logging.info('Arr2D is a ndarray')
+        pass
     else:
-        logging.error('Arr2D is neither a list not a numpy.ndarray. Exiting.')
         return
     if Arr2D.shape[1] > Arr2D.shape[0]:  # Reshape to A[row,column]
         Arr2D = Arr2D.copy().T
     if Arr2D.shape[1] != 2:
-        logging.error('2 columns should be in Arr2D. Exiting.')
         return
     # The pp of Qpp refer to p for 'positive' and n for 'negative' quadrants.
     # In order. first subscript is x, second is y.
@@ -70,30 +54,15 @@ def CountQuads(Arr2D, point):
     Qnp = Arr2D[(Arr2D[:, 0] < point[0]) & (Arr2D[:, 1] > point[1]), :]
     Qpn = Arr2D[(Arr2D[:, 0] > point[0]) & (Arr2D[:, 1] < point[1]), :]
     Qnn = Arr2D[(Arr2D[:, 0] < point[0]) & (Arr2D[:, 1] < point[1]), :]
-    logging.info('Same number of points in Arr2D as in all Quadrants: ' +
-                 str((len(Qpp)+len(Qnp)+len(Qpn)+len(Qnn)) == len(Arr2D)))
-    logging.debug('Number of points in each quadrant: ' +
-                  'Qpp=' + str(len(Qpp)) +
-                  'Qnp=' + str(len(Qnp)) +
-                  'Qpn=' + str(len(Qpn)) +
-                  'Qnn=' + str(len(Qnn)))
     # Normalized fractions:
     ff = 1./len(Arr2D)
     fpp = len(Qpp)*ff
     fnp = len(Qnp)*ff
     fpn = len(Qpn)*ff
     fnn = len(Qnn)*ff
-    logging.debug('Probabilities of finding points in each quadrant:' +
-                  ' fpp=' + str(fpp) +
-                  ' fnp=' + str(fnp) +
-                  ' fpn=' + str(fpn) +
-                  ' fnn=' + str(fnn))
-    logging.debug('Total probability, which should be equal to one:' +
-                  str(fpp + fnp + fpn + fnn))
     # NOTE:  all the f's are supposed to sum to 1.0. Float representation
     # cause SOMETIMES sum to 1.000000002 or something. I don't know how to
     # test for that reliably, OR what to do about it yet. Keep in mind.
-    logging.debug('CountQuads: exiting')
     return(fpp, fnp, fpn, fnn)
 
 
@@ -112,61 +81,41 @@ def FuncQuads(func2D, point, xlim, ylim, rounddig=4):
     n for negative, with the first and second positions meaning the x and y
     directions respectively.
     """
-    logging.info('FuncQuads function. Computes the probability of' +
-                 ' finding points in quadrants around a point using' +
-                 ' a 2D density function.')
     # If func2D is not a function with 2 arguments, exit.
     if callable(func2D):
-        logging.info('func2D is a function')
         if len(inspect.getfullargspec(func2D)[0]) != 2:
-            logging.error('func2D function has not 2 arguments. Exiting.')
             return
         pass
     else:
-        logging.error('func2D is not a function. Exiting.')
         return
     # If xlim, ylim and point are not lists or ndarray, exit.
     if isinstance(point, list):
-        logging.info('point is a list')
         point = np.asarray((np.ravel(point)))
     elif type(point).__module__+type(point).__name__ == 'numpyndarray':
         point = np.ravel(point.copy())
-        logging.info('point is a numpy.ndarray')
     else:
-        logging.error('point is neither a list not a numpy.ndarray. Exiting.')
         return
     if len(point) != 2:
-        logging.error('2 elements should be in point. Exiting.')
         return
     if isinstance(xlim, list):
-        logging.info('xlim is a list')
         xlim = np.asarray((np.sort(np.ravel(xlim))))
     elif type(xlim).__module__+type(xlim).__name__ == 'numpyndarray':
         xlim = np.sort(np.ravel(xlim.copy()))
-        logging.info('xlim is a numpy.ndarray')
     else:
-        logging.info('xlim is neither a list not a numpy.ndarray. Exiting.')
         return
     if len(xlim) != 2:
-        logging.error('2 elements should be in xlim. Exiting.')
         return
     if xlim[0] == xlim[1]:
-        logging.error('limits in xlim should not be the same. Exiting.')
         return
     if isinstance(ylim, list):
-        logging.info('ylim is a list')
         ylim = np.asarray((np.sort(np.ravel(ylim))))
     elif type(ylim).__module__+type(ylim).__name__ == 'numpyndarray':
         ylim = np.sort(np.ravel(ylim.copy()))
-        logging.info('ylim is a numpy.ndarray')
     else:
-        logging.error('ylim is neither a list not a numpy.ndarray. Exiting.')
         return
     if len(ylim) != 2:
-        logging.error('2 elements should be in ylim. Exiting.')
         return
     if ylim[0] == ylim[1]:
-        logging.error('limits in ylim should not be the same. Exiting.')
         return
     # Numerical integration to find the quadrant probabilities.
     totInt = scipy.integrate.dblquad(func2D, *xlim,
@@ -188,14 +137,6 @@ def FuncQuads(func2D, point, xlim, ylim, rounddig=4):
     fnp = round(Qnp/totInt, rounddig)
     fpn = round(Qpn/totInt, rounddig)
     fnn = round(Qnn/totInt, rounddig)
-    logging.info('Probabilities of finding points in each quadrant:' +
-                 ' fpp=' + str(fpp) +
-                 ' fnp=' + str(fnp) +
-                 ' fpn=' + str(fpn) +
-                 ' fnn=' + str(fnn))
-    logging.debug('Total probability, which should be equal to one: ' +
-                  str(fpp + fnp + fpn + fnn))
-    logging.debug('FuncQuads: exiting')
     return(fpp, fnp, fpn, fnn)
 
 
@@ -216,11 +157,9 @@ def Qks(alam, iter=100, prec=1e-6):
     """
     # If j iterations are performed, meaning that toadd
     # is still 2 times larger than the precision.
-    logging.info('Qks function. KS probability function using a float.')
     if isinstance(alam, int) | isinstance(alam, float):
         pass
     else:
-        logging.error('alam is not an integer or float. Exiting.')
         return
     toadd = [1]
     qks = 0.
@@ -230,13 +169,10 @@ def Qks(alam, iter=100, prec=1e-6):
         qks += toadd[-1]
         j += 1
     if (j == iter) | (qks > 1):  # If no convergence after j iter, return 1.0
-        logging.info('No convergence. Returning 1.')
         return(1.0)
     if qks < prec:
-        logging.info('Computed value lower than precision. returning 0.')
         return(0.)
     else:
-        logging.info('Qks: Returning computed value qks= '+str(qks))
         return(qks)
 
 
@@ -253,27 +189,22 @@ def ks2d2s(Arr2D1, Arr2D2):
     it is rejected. Second, the significance level of *d*. Small values of
     prob show that the two samples are significantly different.
     """
-    logging.info('ks2d2s function: Computes the KS statistic on a 2D plane' +
-                 ' for two samples of points.')
+
     if type(Arr2D1).__module__+type(Arr2D1).__name__ == 'numpyndarray':
-        logging.info('Arr2D1 is a ndarray')
+        pass
     else:
-        logging.error('Arr2D1 is neither a list not a numpy.ndarray. Exiting.')
         return
     if Arr2D1.shape[1] > Arr2D1.shape[0]:
         Arr2D1 = Arr2D1.copy().T
     if type(Arr2D2).__module__+type(Arr2D2).__name__ == 'numpyndarray':
-        logging.info('Arr2D2 is a ndarray')
+        pass
     else:
-        logging.error('Arr2D2 is neither a list not a numpy.ndarray. Exiting.')
         return
     if Arr2D2.shape[1] > Arr2D2.shape[0]:
         Arr2D2 = Arr2D2.copy().T
     if Arr2D1.shape[1] != 2:
-        logging.error('2 columns should be in Arr2D1. Exiting.')
         return
     if Arr2D2.shape[1] != 2:
-        logging.error('2 columns should be in Arr2D2. Exiting.')
         return
     d1, d2 = 0., 0.
     for point1 in Arr2D1:
@@ -291,20 +222,14 @@ def ks2d2s(Arr2D1, Arr2D2):
         d2 = max(d2, abs(fmp1-fmp2))
         d2 = max(d2, abs(fmm1-fmm2))
     d = (d1+d2)/2.
-    logging.debug('d='+str(d))
     sqen = np.sqrt(len(Arr2D1)*len(Arr2D2)/(len(Arr2D1)+len(Arr2D2)))
-    logging.debug('sqen='+str(sqen))
     R1 = scipy.stats.pearsonr(Arr2D1[:, 0], Arr2D1[:, 1])[0]
-    logging.debug('R1='+str(R1))
     R2 = scipy.stats.pearsonr(Arr2D2[:, 0], Arr2D2[:, 1])[0]
-    logging.debug('R2='+str(R2))
     RR = np.sqrt(1.-(R1*R1+R2*R2)/2.)
-    logging.debug('RR='+str(RR))
     prob = Qks(d*sqen/(1.+RR*(0.25-0.75/sqen)))
     # Small values of prob show that the two samples are significantly
     # different. Prob is the significance level of an observed value of d.
     # NOT the same as the significance level that ou set and compare to D.
-    logging.debug(' ks2d2s, exiting: Output=d, prob= '+str(d)+', '+str(prob))
     return(d, prob)
 
 
@@ -325,39 +250,29 @@ def ks2d1s(Arr2D, func2D, xlim=[], ylim=[]):
     it is rejected. Second, the significance level of *d*. Small values of
     prob show that the two samples are significantly different.
     """
-    logging.info('ks2d1s function: Computes the KS statistic on a 2D plane' +
-                 ' for one sample and one density function.')
     if callable(func2D):
-        logging.info('func2D is a function')
         if len(inspect.getfullargspec(func2D)[0]) != 2:
-            logging.error('func2D function has not 2 arguments. Exiting.')
             return
         pass
     else:
-        logging.error('func2D is not a function. Exiting.')
         return
     if type(Arr2D).__module__+type(Arr2D).__name__ == 'numpyndarray':
-        logging.info('Arr2D is a ndarray')
+        pass
     else:
-        logging.error('Arr2D is neither a list not a numpy.ndarray. Exiting.')
         return
     print(Arr2D.shape)
     if Arr2D.shape[1] > Arr2D.shape[0]:
         Arr2D = Arr2D.copy().T
     if Arr2D.shape[1] != 2:
-        logging.error('2 columns should be in Arr2D1. Exiting.')
         return
     if xlim == []:
-        logging.debug('No xlim given. Computing xlim using given data.')
         xlim.append(np.amin(Arr2D[:, 0]) -
                     abs(np.amin(Arr2D[:, 0]) -
                     np.amax(Arr2D[:, 0]))/10)
         xlim.append(np.amax(Arr2D[:, 0]) -
                     abs(np.amin(Arr2D[:, 0]) -
                     np.amax(Arr2D[:, 0]))/10)
-        logging.debug('Computed xlim: '+str(xlim))
     if ylim == []:
-        logging.debug('No ylim given. Computing ylim using given data.')
         ylim.append(np.amin(Arr2D[:, 1]) -
                     abs(np.amin(Arr2D[:, 1]) -
                     np.amax(Arr2D[:, 1]))/10)
@@ -365,7 +280,6 @@ def ks2d1s(Arr2D, func2D, xlim=[], ylim=[]):
         ylim.append(np.amax(Arr2D[:, 1]) -
                     abs(np.amin(Arr2D[:, 1]) -
                     np.amax(Arr2D[:, 1]))/10)
-        logging.debug('Computed ylim: '+str(ylim))
     d = 0
     for point in Arr2D:
         fpp1, fmp1, fpm1, fmm1 = FuncQuads(func2D, point, xlim, ylim)
@@ -375,12 +289,7 @@ def ks2d1s(Arr2D, func2D, xlim=[], ylim=[]):
         d = max(d, abs(fmp1-fmp2))
         d = max(d, abs(fmm1-fmm2))
     sqen = np.sqrt(len(Arr2D))
-    logging.debug('sqen= '+str(sqen))
     R1 = scipy.stats.pearsonr(Arr2D[:, 0], Arr2D[:, 1])[0]
-    logging.debug('R1= '+str(R1))
     RR = np.sqrt(1.0-R1**2)
-    logging.debug('RR= '+str(RR))
     prob = Qks(d*sqen/(1.+RR*(0.25-0.75/sqen)))
-    logging.debug(' ks2d2s, exiting: Output=d, prob= '+str(d)+', '+str(prob))
-    print(d)
     return d, prob
