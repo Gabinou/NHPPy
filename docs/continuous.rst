@@ -55,6 +55,9 @@ The :py:mod:`stochastic.continuous` module provides classes for generating
 .. autoclass:: stochastic.continuous.MixedPoissonProcess
     :members: rate_dist, rate_args, rate_kwargs, sample
 
+.. autoclass:: stochastic.continuous.MixedPoissonProcess
+    :members: rate, rate_func, rate_args, rate_kwargs, sample
+
 .. autoclass:: stochastic.continuous.MultifractionalBrownianMotion
     :members: t, hurst, sample, times
 
