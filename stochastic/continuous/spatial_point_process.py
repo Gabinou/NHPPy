@@ -24,7 +24,7 @@ class SpatialPointProcess(PoissonProcess):
     :param dict rate_kwargs: keyword args for callable ``density``
     """
 
-    def __init__(self, density, bounds=(), density_kwargs={}):
+    def __init__(self, density, density_args={}, density_kwargs={}):
         self.density = density
         self.bounds = bounds
         self.density_kwargs = density_kwargs
@@ -34,10 +34,10 @@ class SpatialPointProcess(PoissonProcess):
 
     def __repr__(self):
         return "MixedPoissonProcess(" \
-            "density={rf}, bounds={ra}, rate_kwargs={rkw})".format(
+            "density={d}, density_args={da}, density_kwargs={dkw})".format(
                 rf=str(self.density),
-                ra=str(self.bounds),
-                rkw=str(self.rate_kwargs)
+                ra=str(self.density_args),
+                rkw=str(self.density_akwargs)
             )
 
     @property
@@ -52,39 +52,72 @@ class SpatialPointProcess(PoissonProcess):
         self._density = value
 
     @property
-    def bounds(self):
+    def density_args(self):
         """Positional arguments for the density function. 
         Delimits the point generation space. """
-        return self._bounds
+        return self._density_args
 
     @bounds.setter
-    def bounds(self, value):
-        if not isinstance(value, (list, tuple, np.ndarray)):
-            raise ValueError("Bounds must be a list, tuple or np.ndarray.")
+    def density_args(self, value):
+        if not isinstance(value, (list, tuple)):
+            raise ValueError("Density args must be a list, tuple.")
         self._bounds = value
 
     @property
-    def rate_kwargs(self):
+    def density_kwargs(self):
         """Keyword arguments for the density function."""
-        return self._rate_kwargs
+        return self._density_kwargs
 
     @rate_kwargs.setter
-    def rate_kwargs(self, value):
+    def density_kwargs(self, value):
         if not isinstance(value, dict):
-            raise ValueError("Rate kwargs must be a dict.")
-        self._rate_kwargs = value
+            raise ValueError("Density kwargs must be a dict.")
+        self._density_kwargs = value
 
-    def sample(self, n=None, length=None, zero=True):
+    def sample(self, bounds=(), n=None, algo='thinning'):
         """Generate a realization.
 
-        Exactly one of `n` and `length` must be provided. Generates a random
-        variate for the rate, then generates a Poisson process realization
-        using this rate.
+        The number of samples ``n`` and the spatial ``bounds`` must be provided.
+        The number of dimensions is taken to be the number of bound pairs in    
+        ``bounds``
 
         :param int n: the number of arrivals to simulate
-        :param int length: the length of time to simulate; will generate
-            arrivals until length is met or exceeded.
-        :param bool zero: if True, include :math:`t=0`
+        :param tuple bounds: the bounds in which to generate arrivals
         """
+        if callable(lambdaa):
+            boundstuple=[]
+            for i in Boundaries: boundstuple+=(tuple(i),)
+            max = scipy.optimize.minimize(lambda x: -lambdaa(*x),x0=[np.mean(i) for i in Boundaries],bounds = boundstuple)
+            lmax=lambdaa(*max.x)
+        else:
+            lmax=np.amax(lambdaa)
+        Thinned=[]
+        while len(Thinned)<Samples:
+            for i in Boundaries:
+                if 'Unthin' not in locals():
+                    Unthin=np.random.uniform(*i,size=(blocksize))
+                else:
+                    Unthin=np.vstack((Unthin,np.random.uniform(*i,size=(blocksize))))
+            Unthin.T
+            if len(Unthin.shape)==1:
+                Unthin=np.reshape(Unthin,(1,len(Unthin)))
+            U=np.random.uniform(size=(blocksize))
+            if callable(lambdaa): 
+                Criteria=lambdaa(*Unthin)/lmax
+            else:
+                Criteria2D=lambdaa/lmax
+                Indx=(Unthinx*lambdaa.shape[0]).astype(int)
+                Indy=(Unthiny*lambdaa.shape[1]).astype(int)
+                Criteria=Criteria2D[Indx,Indy]
+                Unthin=np.transpose(np.vstack((Unthinx,Unthiny)))
+            if Thinned==[]: 
+                Thinned=Unthin.T[U<Criteria,:]
+            else:
+                Thinned=np.vstack((Thinned,Unthin.T[U<Criteria,:]))
+            del Unthin
+        Thinned=Thinned[:Samples,:]
+        return(Thinned)
+
+
         self.rate = self._sample_rate()
         return self._sample_poisson_process(n, length, zero)
