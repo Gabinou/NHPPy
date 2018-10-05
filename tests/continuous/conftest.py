@@ -112,6 +112,31 @@ def mean_func(request):
 def mean_func_invalid(request):
     return request.param
 
+# MixedPoissonProcess
+@pytest.fixture(params=[np.random.uniform])
+def rate_func(request):
+    return request.param
+
+@pytest.fixture(params=[(1, 100), (1, 10)])
+def rate_args(request):
+    return request.param
+
+@pytest.fixture(params=[{'size': None}])
+def rate_kwargs(request):
+    return request.param
+
+@pytest.fixture(params=[0])
+def rate_func_invalid(request):
+    return request.param
+
+@pytest.fixture(params=[0])
+def rate_args_invalid(request):
+    return request.param
+
+@pytest.fixture(params=[0])
+def rate_kwargs_invalid(request):
+    return request.param
+
 # MultifractionalBrownianMotion
 def hurst_const(t):
     return 0.5
@@ -146,27 +171,33 @@ def length(request):
 def rate(request):
     return request.param
 
-# MixedPoissonProcess
-@pytest.fixture(params=[np.random.uniform])
-def rate_func(request):
+# SpatialPointProcess
+density_1D = np.linspace(0,3,100)
+density_2D = np.matmul(np.reshape(density_1D,(100,1)), 
+                       np.reshape(density_1D,(1,100)))
+density_3D = np.matmul(np.reshape(density_2D,(100,100,1)), 
+                       np.reshape(density_1D,(1,1,100)))
+
+@pytest.fixture(params=[0, None, 
+                lambda x: x**2,
+                lambda x, a=None: x**2,
+                lambda x, a=None, b=None: x**2,
+                lambda x, y: x**2+y**3, 
+                lambda x, y, a=None: x**2+y**3, 
+                lambda x, y, a=None, b=None: x**2+y**3, 
+                lambda x, y, z: x**2+y**3*z, 
+                lambda x, y, z, a=None: x**2+y**3*z, 
+                lambda x, y, z, a=None, b=None: x**2+y**3*z, 
+                density_1D,
+                density_2D,
+                density_3D,])
+def density(request):
     return request.param
 
-@pytest.fixture(params=[(1, 100), (1, 10)])
-def rate_args(request):
+@pytest.fixture(params=[None, ([0, 1],), [[0,3], [0,2],], ([0,1], [0,2], [0,3]),])
+def bounds(request):
     return request.param
 
-@pytest.fixture(params=[{'size': None}])
-def rate_kwargs(request):
-    return request.param
-
-@pytest.fixture(params=[0])
-def rate_func_invalid(request):
-    return request.param
-
-@pytest.fixture(params=[0])
-def rate_args_invalid(request):
-    return request.param
-
-@pytest.fixture(params=[0])
-def rate_kwargs_invalid(request):
+@pytest.fixture(params=[0, {}])
+def density_kwargs(request):
     return request.param
