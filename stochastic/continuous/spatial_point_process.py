@@ -65,19 +65,18 @@ class SpatialPointProcess(PoissonProcess):
 
     def _sample_spatial_point_process(self, n=None, bounds=(), algo='thinning', blocksize=1000):
         if (n is not None) & (bounds is not ()):
+            Thinned = np.array([])
             if algo=='thinning':
                 if callable(self.density):
                     boundstuple=[]
                     for i in bounds: boundstuple+=(tuple(i),)
                     max = scipy.optimize.minimize(lambda x: -self.density(x),x0=[np.mean(i) for i in bounds],bounds = boundstuple)
                     density_max = self.density(max.x, *self.density_kwargs)           
-                    Thinned = np.array([])
                     while len(Thinned.T) < n:
+                        Unthinned = np.empty(blocksize)
                         for bound in bounds:
-                            if 'Unthinned' not in locals():
-                                Unthinned = np.random.uniform(*bound, size=(blocksize))
-                            else:
-                                Unthinned = np.vstack((Unthinned, np.random.uniform(*bound, size=(blocksize))))
+                            Unthinned = np.vstack((Unthinned, np.random.uniform(*bound, size=(blocksize))))
+                        Unthinned = Unthinned[1:,:]
                         if len(Unthinned.T.shape) == 1:
                             Unthinned = np.reshape(Unthinned, (1, len(Unthinned)))
                         U = np.random.uniform(size=(blocksize))
@@ -86,22 +85,20 @@ class SpatialPointProcess(PoissonProcess):
                             Thinned = Unthinned[:, U < Criteria]
                         else:
                             Thinned = np.vstack((Thinned, Unthinned[:, U < Criteria].T))
-                        del Unthinned
                 else:
                     density_max = np.amax(self.density)
-                    Thinned = np.array([])
                     while len(Thinned.T) < n:
+                        Unthinned = np.empty(blocksize, dtype='int')
                         for shape in self.density.shape:
-                            if 'Unthinned' not in locals():
-                                Unthinned = np.random.randint(0, shape, size=(blocksize))
-                            else:
-                                Unthinned = np.vstack((Unthinned, np.random.randint(0, shape, size=(blocksize))))
+                            Unthinned = np.vstack((Unthinned, np.random.randint(0, shape, size=(blocksize))))
+                        Unthinned = Unthinned[1:,:]
                         if len(Unthinned.T.shape) == 1:
                             Unthinned.T = np.reshape(Unthinned, (1, len(Unthinned)))
                         U = np.random.uniform(size=(blocksize))
                         Criteria_ndim = self.density/density_max
                         Criteria = []
                         for point in Unthinned.T:
+                            print(point)
                             Criteria.append(Criteria_ndim[tuple(point)])
                         if len(Thinned) == 0:
                             Thinned = Unthinned[:, U < Criteria]
