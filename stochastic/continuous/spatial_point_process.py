@@ -65,14 +65,14 @@ class SpatialPointProcess(PoissonProcess):
 
     def _sample_spatial_point_process(self, n=None, bounds=(), algo='thinning', blocksize=1000):
         if (n is not None) & (bounds is not ()):
-            Thinned = np.array([])
+            Thinned = np.empty((1,len(bounds)))
             if algo=='thinning':
                 if callable(self.density):
                     boundstuple=[]
                     for i in bounds: boundstuple+=(tuple(i),)
                     max = scipy.optimize.minimize(lambda x: -self.density(x),x0=[np.mean(i) for i in bounds],bounds = boundstuple)
                     density_max = self.density(max.x, *self.density_kwargs)           
-                    while len(Thinned.T) < n:
+                    while len(Thinned) < n:
                         Unthinned = np.empty(blocksize)
                         for bound in bounds:
                             Unthinned = np.vstack((Unthinned, np.random.uniform(*bound, size=(blocksize))))
@@ -81,14 +81,12 @@ class SpatialPointProcess(PoissonProcess):
                             Unthinned = np.reshape(Unthinned, (1, len(Unthinned)))
                         U = np.random.uniform(size=(blocksize))
                         Criteria = self.density(Unthinned)/density_max
-                        if len(Thinned) == 0:
-                            Thinned = Unthinned[:, U < Criteria]
-                        else:
-                            Thinned = np.vstack((Thinned, Unthinned[:, U < Criteria].T))
+                        Thinned = np.vstack((Thinned, Unthinned[:, U < Criteria].T))
                 else:
                     density_max = np.amax(self.density)
-                    while len(Thinned.T) < n:
+                    while len(Thinned) < n:
                         Unthinned = np.empty(blocksize, dtype='int')
+                        # int: the outputs are indexes of the density array.
                         for shape in self.density.shape:
                             Unthinned = np.vstack((Unthinned, np.random.randint(0, shape, size=(blocksize))))
                         Unthinned = Unthinned[1:,:]
@@ -98,15 +96,10 @@ class SpatialPointProcess(PoissonProcess):
                         Criteria_ndim = self.density/density_max
                         Criteria = []
                         for point in Unthinned.T:
-                            print(point)
                             Criteria.append(Criteria_ndim[tuple(point)])
-                        if len(Thinned) == 0:
-                            Thinned = Unthinned[:, U < Criteria]
-                        else:
-                            Thinned = np.hstack((Thinned, Unthinned[:, U < Criteria]))
-                        del Unthinned
-                Thinned = Thinned[:, :n]
-                return(Thinned.T)
+                        Thinned = np.vstack((Thinned.astype('int'), Unthinned[:, U < Criteria].T))
+                Thinned = Thinned[1:n+1, :]
+                return(Thinned)
 
     def sample(self, n=None, bounds=(), algo='thinning', blocksize=1000):
         """Generate a realization.
