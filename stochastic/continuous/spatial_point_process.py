@@ -48,7 +48,7 @@ class SpatialPointProcess(PoissonProcess):
     @density.setter
     def density(self, value):
         if (not callable(value)) & (not isinstance(value, (list, tuple, np.ndarray))):
-            raise ValueError("Density must be a callable or n-dimensional array.")
+            raise ValueError("Density must be a callable or n-dimensional array, list or tuple.")
         self._density = value
 
     @property
@@ -65,7 +65,7 @@ class SpatialPointProcess(PoissonProcess):
     def _sample_spatial_point_process(self, n=None, bounds=(), algo='thinning', blocksize=1000):
         if (n is not None) & (bounds is not ()):
             Thinned = np.empty((1,len(bounds)))
-            if algo=='thinning':
+            if algo == 'thinning':
                 if callable(self.density):
                     boundstuple=[]
                     for i in bounds: boundstuple+=(tuple(i),)
@@ -75,29 +75,30 @@ class SpatialPointProcess(PoissonProcess):
                         Unthinned = np.empty(blocksize)
                         for bound in bounds:
                             Unthinned = np.vstack((Unthinned, np.random.uniform(*bound, size=(blocksize))))
-                        Unthinned = Unthinned[1:,:]
+                        Unthinned = Unthinned[1:, :]
                         U = np.random.uniform(size=(blocksize))
                         Criteria = self.density(Unthinned)/density_max
                         Thinned = np.vstack((Thinned, Unthinned[:, U < Criteria].T))
                 elif isinstance(self.density, (list, tuple, np.ndarray)):
+                    if len(self.density.shape) != len(bounds):
+                        raise ValueError(
+                    "Number of dimensions of bounds must match density array")
                     density_max = np.amax(self.density)
                     while len(Thinned) < n:
                         Unthinned = np.empty(blocksize, dtype='int')
                         # int: the outputs are indexes of the density array.
                         for shape in self.density.shape:
                             Unthinned = np.vstack((Unthinned, np.random.randint(0, shape, size=(blocksize))))
-                        Unthinned = Unthinned[1:,:]
+                        Unthinned = Unthinned[1:, :]
                         U = np.random.uniform(size=(blocksize))
                         Criteria_ndim = self.density/density_max
                         Criteria = []
                         for point in Unthinned.T:
                             Criteria.append(Criteria_ndim[tuple(point)])
                         Thinned = np.vstack((Thinned.astype('int'), Unthinned[:, U < Criteria].T))
-                Thinned = Thinned[1:n+1, :]
-                return(Thinned)
+                return(Thinned[1:n+1, :])
         else:
-            raise ValueError(
-                "Must provide arguments bounds and n.")
+            raise ValueError("Must provide arguments bounds and n.")
 
     def sample(self, n=None, bounds=(), algo='thinning', blocksize=1000):
         """Generate a realization.
