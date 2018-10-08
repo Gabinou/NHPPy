@@ -1,7 +1,6 @@
 """Spatial Point Processes."""
 
 from stochastic.continuous.poisson import PoissonProcess
-import inspect
 import numpy as np
 import scipy
 
@@ -77,12 +76,10 @@ class SpatialPointProcess(PoissonProcess):
                         for bound in bounds:
                             Unthinned = np.vstack((Unthinned, np.random.uniform(*bound, size=(blocksize))))
                         Unthinned = Unthinned[1:,:]
-                        if len(Unthinned.T.shape) == 1:
-                            Unthinned = np.reshape(Unthinned, (1, len(Unthinned)))
                         U = np.random.uniform(size=(blocksize))
                         Criteria = self.density(Unthinned)/density_max
                         Thinned = np.vstack((Thinned, Unthinned[:, U < Criteria].T))
-                elif isinstance(self.density, (list, tuple, np.ndarray))::
+                elif isinstance(self.density, (list, tuple, np.ndarray)):
                     density_max = np.amax(self.density)
                     while len(Thinned) < n:
                         Unthinned = np.empty(blocksize, dtype='int')
@@ -90,8 +87,6 @@ class SpatialPointProcess(PoissonProcess):
                         for shape in self.density.shape:
                             Unthinned = np.vstack((Unthinned, np.random.randint(0, shape, size=(blocksize))))
                         Unthinned = Unthinned[1:,:]
-                        if len(Unthinned.T.shape) == 1:
-                            Unthinned.T = np.reshape(Unthinned, (1, len(Unthinned)))
                         U = np.random.uniform(size=(blocksize))
                         Criteria_ndim = self.density/density_max
                         Criteria = []
@@ -100,6 +95,9 @@ class SpatialPointProcess(PoissonProcess):
                         Thinned = np.vstack((Thinned.astype('int'), Unthinned[:, U < Criteria].T))
                 Thinned = Thinned[1:n+1, :]
                 return(Thinned)
+        else:
+            raise ValueError(
+                "Must provide arguments bounds and n.")
 
     def sample(self, n=None, bounds=(), algo='thinning', blocksize=1000):
         """Generate a realization.
