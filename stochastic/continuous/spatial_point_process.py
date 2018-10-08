@@ -82,7 +82,7 @@ class SpatialPointProcess(PoissonProcess):
                         U = np.random.uniform(size=(blocksize))
                         Criteria = self.density(Unthinned)/density_max
                         Thinned = np.vstack((Thinned, Unthinned[:, U < Criteria].T))
-                else:
+                elif isinstance(self.density, (list, tuple, np.ndarray))::
                     density_max = np.amax(self.density)
                     while len(Thinned) < n:
                         Unthinned = np.empty(blocksize, dtype='int')
