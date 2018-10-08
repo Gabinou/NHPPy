@@ -20,9 +20,14 @@ def test_poisson_process_str_repr(density_1D, density_2D, density_3D, density_kw
 def test_poisson_process_sample(density_1D, density_2D, density_3D, n_fixture,
     bounds_1D, bounds_2D, bounds_3D, density_kwargs):
     instance = SpatialPointProcess(rate)
-    if n_fixture is None and length is None:
+    for bounds in (bounds_1D, bounds_2D, bounds_3D):
+        for density in (density_1D, density_2D, density_3D):
+
+    if n_fixture is None:
         with pytest.raises(ValueError):
             s = instance.sample(n_fixture, length, zero)
+    elif isinstance(density, (list, tuple, np.ndarray)):
+        if len(bounds) != len(*density)
     elif length is not None and n_fixture is None:
         s = instance.sample(n_fixture, length, zero)
         assert s[-1] >= length
