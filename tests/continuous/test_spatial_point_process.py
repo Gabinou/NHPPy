@@ -1,26 +1,24 @@
 """Test SpatialPointProcess."""
 # flake8: noqa
 import pytest
-import inspect 
+import numpy as np
 from stochastic.continuous import SpatialPointProcess
 
 
-def test_poisson_process_str_repr(density, density_kwargs):
-    if callable(density):
-            with pytest.raises(ValueError):
-                instance = SpatialPointProcess(rate_func, rate_args, rate_kwargs)
-        elif not isinstance(rate_kwargs, dict):
-            with pytest.raises(ValueError):
-                instance = SpatialPointProcess(rate_func, rate_args, rate_kwargs)
-        elif not callable(rate_func):
-            with pytest.raises(ValueError):
-                instance = SpatialPointProcess(rate_func, rate_args, rate_kwargs)
+def test_poisson_process_str_repr(density_1D, density_2D, density_3D, density_kwargs):
+    for density in (density_1D, density_2D, density_3D):
+        if (not callable(density)) or
+           (not isinstance(density, (list, tuple, np.ndarray))) or
+           (not isinstance(density_kwargs, dict)):
+                with pytest.raises(ValueError):
+                    instance = SpatialPointProcess(density, density_kwargs)
         else: 
-        instance = SpatialPointProcess(rate)
-    assert isinstance(repr(instance), str)
-    assert isinstance(str(instance), str)
+            instance = SpatialPointProcess(density, density_kwargs)
+            assert isinstance(repr(instance), str)
+            assert isinstance(str(instance), str)
 
-def test_poisson_process_sample(density, n_fixture, bounds, density_kwargs):
+def test_poisson_process_sample(density_1D, density_2D, density_3D, n_fixture,
+    bounds_1D, bounds_2D, bounds_3D, density_kwargs):
     instance = SpatialPointProcess(rate)
     if n_fixture is None and length is None:
         with pytest.raises(ValueError):
