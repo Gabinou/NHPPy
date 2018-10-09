@@ -12,6 +12,7 @@ from stochastic.continuous.inverse_gaussian import InverseGaussianProcess
 from stochastic.continuous.mixed_poisson import MixedPoissonProcess
 from stochastic.continuous.multifractional_brownian_motion import MultifractionalBrownianMotion
 from stochastic.continuous.poisson import PoissonProcess
+from stochastic.continuous.spatial_point_process import SpatialPointProcess
 from stochastic.continuous.squared_bessel import SquaredBesselProcess
 from stochastic.continuous.variance_gamma import VarianceGammaProcess
 from stochastic.continuous.wiener import WienerProcess
