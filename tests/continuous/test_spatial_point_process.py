@@ -5,7 +5,7 @@ import numpy as np
 from stochastic.continuous import SpatialPointProcess
 
 
-def test_poisson_process_str_repr(density_1D, density_2D, density_3D,
+def test_spatial_point_process_str_repr(density_1D, density_2D, density_3D,
                                   density_kwargs):
     for density in (density_1D, density_2D, density_3D):
         if ((not callable(density)) or
@@ -19,7 +19,7 @@ def test_poisson_process_str_repr(density_1D, density_2D, density_3D,
             assert isinstance(str(instance), str)
 
 
-def test_poisson_process_sample(density_1D, density_2D, density_3D,
+def test_spatial_point_process_sample(density_1D, density_2D, density_3D,
                                 n_fixture, bounds_1D, bounds_2D, bounds_3D,
                                 density_kwargs):
     bounds = (bounds_1D, bounds_2D, bounds_3D,)
@@ -51,7 +51,7 @@ def test_poisson_process_sample(density_1D, density_2D, density_3D,
                 assert len(s) == n_fixture + int(zero)
 
 
-def test_poisson_process_times(density_1D, density_2D, density_3D,
+def test_spatial_point_process_times(density_1D, density_2D, density_3D,
                                 n_fixture, bounds_1D, bounds_2D, bounds_3D,
                                 density_kwargs):
     bounds = (bounds_1D, bounds_2D, bounds_3D,)
