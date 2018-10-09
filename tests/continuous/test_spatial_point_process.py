@@ -7,9 +7,9 @@ from stochastic.continuous import SpatialPointProcess
 
 def test_poisson_process_str_repr(density_1D, density_2D, density_3D, density_kwargs):
     for density in (density_1D, density_2D, density_3D):
-        if (not callable(density)) or
-           (not isinstance(density, (list, tuple, np.ndarray))) or
-           (not isinstance(density_kwargs, dict)):
+        if ((not callable(density)) or
+            (not isinstance(density, (list, tuple, np.ndarray))) or
+            (not isinstance(density_kwargs, dict))):
                 with pytest.raises(ValueError):
                     instance = SpatialPointProcess(density, density_kwargs)
         else: 
@@ -20,20 +20,27 @@ def test_poisson_process_str_repr(density_1D, density_2D, density_3D, density_kw
 def test_poisson_process_sample(density_1D, density_2D, density_3D, n_fixture,
     bounds_1D, bounds_2D, bounds_3D, density_kwargs):
     instance = SpatialPointProcess(rate)
-    for bounds in (bounds_1D, bounds_2D, bounds_3D):
-        for density in (density_1D, density_2D, density_3D):
-
-    if n_fixture is None:
-        with pytest.raises(ValueError):
-            s = instance.sample(n_fixture, length, zero)
-    elif isinstance(density, (list, tuple, np.ndarray)):
-        if len(bounds) != len(*density)
-    elif length is not None and n_fixture is None:
-        s = instance.sample(n_fixture, length, zero)
-        assert s[-1] >= length
-    else:  # n_fixture is not None:
-        s = instance.sample(n_fixture, length, zero)
-        assert len(s) == n_fixture + int(zero)
+    bounds = (bounds_1D, bounds_2D, bounds_3D,)
+    density = (density_1D, density_2D, density_3D,)
+    for bound_index in range(3):
+        for density_index in range(3):
+            if bound_index != density_index:
+                with pytest.raises(ValueError):
+                    instance = SpatialPointProcess(density[density_index], density_kwargs)
+                    s = instance.sample(n=n_fixture, bounds=bounds[bound_index])
+            elif (not isinstance(density_kwargs, dict) or
+                  not isinstance(density, (list, tuple, np.ndarray))):
+                with pytest.raises(ValueError):
+                    instance = SpatialPointProcess(density[density_index], density_kwargs)
+            else:   
+                instance = SpatialPointProcess(density[density_index], density_kwargs)
+            if (not isinstance(n_fixture, int) or 
+                not isinstance(bounds, (list, tuple, np.ndarray))):
+                with pytest.raises(ValueError):
+                    s = instance.sample(n=n_fixture, bounds=bounds[bound_index])
+            else:
+                s = instance.sample(n=n_fixture, bounds=bounds[bound_index]) 
+                assert len(s) == n_fixture + int(zero)  
 
 def test_poisson_process_times(rate, n):
     instance = SpatialPointProcess(rate)
