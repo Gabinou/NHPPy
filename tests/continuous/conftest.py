@@ -172,11 +172,14 @@ def rate(request):
     return request.param
 
 # SpatialPointProcess
+
+# Generate multidimensional arrays representing the density.
 density_1D_Arr = np.linspace(0,3,100)
 density_2D_Arr = np.matmul(np.reshape(density_1D_Arr,(100,1)), 
                        np.reshape(density_1D_Arr,(1,100)))
 density_3D_Arr = np.matmul(np.reshape(density_2D_Arr,(100,100,1)), 
                        np.reshape(density_1D_Arr,(1,1,100)))
+
 @pytest.fixture(params=[0, None, density_1D_Arr,
                 lambda vec: vec[0]**2,
                 lambda vec, a=None: vec[0]**2,
