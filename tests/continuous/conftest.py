@@ -180,36 +180,30 @@ density_2D_Arr = np.matmul(np.reshape(density_1D_Arr,(100,1)),
 density_3D_Arr = np.matmul(np.reshape(density_2D_Arr,(100,100,1)), 
                        np.reshape(density_1D_Arr,(1,1,100)))
 
-@pytest.fixture(params=[0, None, density_1D_Arr,
-                lambda vec: vec[0]**2,
-                lambda vec, a=None: vec[0]**2,
-                lambda vec, a=None, b=None: vec[0]**2,])
+@pytest.fixture(params=[None, 0, density_1D_Arr,
+                lambda vec: vec[0]**2])
 def density_1D(request):
     return request.param
 
-@pytest.fixture(params=[0, None, density_2D_Arr,
-                lambda vec: vec[0]**2+y**3, 
-                lambda vec, a=None: vec[0]*21+y**3, 
-                lambda vec, a=None, b=None: 3*vec[0]+4+vec[1]**5])
+@pytest.fixture(params=[None, density_2D_Arr,
+                lambda vec: vec[0]**2+vec[1]**3])
 def density_2D(request):
     return request.param
 
-@pytest.fixture(params=[0, None, density_3D_Arr,
-                lambda vec: vec[0]**2*vec[1]**3*z, 
-                lambda vec, a=None: vec[0]**2+vec[1]**3*vec[2], 
-                lambda vec, a=None, b=None: vec[0]**2*vec[1]**2+vec[2], ])
+@pytest.fixture(params=[None, density_3D_Arr,
+                lambda vec: vec[0]**2*vec[1]**3*zs])
 def density_3D(request):
     return request.param
 
-@pytest.fixture(params=[None, [[0,3],],] )
+@pytest.fixture(params=[[[0,3],],] )
 def bounds_1D(request):
     return request.param
 
-@pytest.fixture(params=[None, [[0,3], [0,2],]])
+@pytest.fixture(params=[[[0,3], [0,2],]])
 def bounds_2D(request):
     return request.param
 
-@pytest.fixture(params=[None, ([0,1], [0,2], [0,3]),])
+@pytest.fixture(params=[([0,1], [0,2], [0,3]),])
 def bounds_3D(request):
     return request.param
 
