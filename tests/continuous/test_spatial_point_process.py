@@ -37,7 +37,7 @@ def test_spatial_point_process_str_repr_3D(density_3D, density_kwargs):
         assert isinstance(repr(instance), str)
         assert isinstance(str(instance), str)
 
-def test_spatial_point_process_sample(density_1D, n_fixture, bounds_1D, density_kwargs):
+def test_spatial_point_process_sample_1D(density_1D, n_fixture, bounds_1D, density_kwargs):
     if (((not callable(density_1D)) and
         (not isinstance(density_1D, (list, tuple, np.ndarray)))) or
         (not isinstance(density_kwargs, dict))):
@@ -55,7 +55,7 @@ def test_spatial_point_process_sample(density_1D, n_fixture, bounds_1D, density_
             s = instance.sample(n_fixture, bounds_1D)
             assert len(s) == n_fixture
 
-def test_spatial_point_process_sample(density_2D, n_fixture, bounds_2D, density_kwargs):
+def test_spatial_point_process_sample_2D(density_2D, n_fixture, bounds_2D, density_kwargs):
     if (((not callable(density_2D)) and
         (not isinstance(density_2D, (list, tuple, np.ndarray)))) or
         (not isinstance(density_kwargs, dict))):
@@ -73,7 +73,7 @@ def test_spatial_point_process_sample(density_2D, n_fixture, bounds_2D, density_
             s = instance.sample(n_fixture, bounds_2D)
             assert len(s) == n_fixture
 
-def test_spatial_point_process_sample(density_3D, n_fixture, bounds_3D, density_kwargs):
+def test_spatial_point_process_sample_3D(density_3D, n_fixture, bounds_3D, density_kwargs):
     if (((not callable(density_3D)) and
         (not isinstance(density_3D, (list, tuple, np.ndarray)))) or
         (not isinstance(density_kwargs, dict))):
@@ -91,4 +91,35 @@ def test_spatial_point_process_sample(density_3D, n_fixture, bounds_3D, density_
             s = instance.sample(n_fixture, bounds_3D)
             assert len(s) == n_fixture
 
-git 
+def test_poisson_process_times(density_1D, density_kwargs, n):
+    if (((not callable(density_1D)) and
+        (not isinstance(density_1D, (list, tuple, np.ndarray)))) or
+        (not isinstance(density_kwargs, dict))):
+        with pytest.raises(ValueError):
+            instance = SpatialPointProcess(density_1D, density_kwargs)
+    else:
+        instance = SpatialPointProcess(density_1D, density_kwargs)
+        with pytest.raises(AttributeError):
+            times = instance.times(n)
+
+def test_poisson_process_times(density_2D, density_kwargs, n):
+    if (((not callable(density_2D)) and
+        (not isinstance(density_2D, (list, tuple, np.ndarray)))) or
+        (not isinstance(density_kwargs, dict))):
+        with pytest.raises(ValueError):
+            instance = SpatialPointProcess(density_2D, density_kwargs)
+    else:
+        instance = SpatialPointProcess(density_2D, density_kwargs)
+        with pytest.raises(AttributeError):
+            times = instance.times(n)
+
+def test_poisson_process_times(density_3D, density_kwargs, n):
+    if (((not callable(density_3D)) and
+        (not isinstance(density_3D, (list, tuple, np.ndarray)))) or
+        (not isinstance(density_kwargs, dict))):
+        with pytest.raises(ValueError):
+            instance = SpatialPointProcess(density_3D, density_kwargs)
+    else:
+        instance = SpatialPointProcess(density_3D, density_kwargs)
+        with pytest.raises(AttributeError):
+            times = instance.times(n)
