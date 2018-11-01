@@ -67,7 +67,7 @@ class SpatialPointProcess(PoissonProcess):
 
     def _sample_spatial_point_process(self, n=None, bounds=(),
                                       algo='thinning', blocksize=1000):
-        if (n is not None) & (bounds is not ()):
+        if (n is not None) & (bounds is not ()) & (bounds is not None):
             Thinned = np.empty((1, len(bounds)))
             if algo == 'thinning':
                 if callable(self.density):
