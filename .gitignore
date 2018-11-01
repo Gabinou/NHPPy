@@ -6,6 +6,7 @@
 .coverage.*
 _cov
 
+.vs\
 # python
 __pycache__
 *.pyc

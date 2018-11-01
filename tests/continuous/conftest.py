@@ -185,28 +185,28 @@ density_3D_Arr = np.matmul(np.reshape(density_2D_Arr,(100,100,1)),
 def density_1D(request):
     return request.param
 
-@pytest.fixture(params=[None, density_2D_Arr,
+@pytest.fixture(params=[None, 0, density_2D_Arr,
                 lambda vec: vec[0]**2+vec[1]**3])
 def density_2D(request):
     return request.param
 
-@pytest.fixture(params=[None, density_3D_Arr,
+@pytest.fixture(params=[None, 0, density_3D_Arr,
                 lambda vec: vec[0]**2*vec[1]**3*vec[2]])
 def density_3D(request):
     return request.param
 
-@pytest.fixture(params=[[[0,3],],] )
+@pytest.fixture(params=[None, (), [[0,3],],] )
 def bounds_1D(request):
     return request.param
 
-@pytest.fixture(params=[[[0,3], [0,2],]])
+@pytest.fixture(params=[None, (), [[0,3], [0,2],]])
 def bounds_2D(request):
     return request.param
 
-@pytest.fixture(params=[([0,1], [0,2], [0,3]),])
+@pytest.fixture(params=[None, (), ([0,1], [0,2], [0,3]),])
 def bounds_3D(request):
     return request.param
 
-@pytest.fixture(params=[0, {}])
+@pytest.fixture(params=[None, 0, {}])
 def density_kwargs(request):
     return request.param
