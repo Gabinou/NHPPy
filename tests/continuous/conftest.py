@@ -191,7 +191,7 @@ def density_2D(request):
     return request.param
 
 @pytest.fixture(params=[None, density_3D_Arr,
-                lambda vec: vec[0]**2*vec[1]**3*zs])
+                lambda vec: vec[0]**2*vec[1]**3*vec[2]])
 def density_3D(request):
     return request.param
 

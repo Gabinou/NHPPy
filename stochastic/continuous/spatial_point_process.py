@@ -38,8 +38,8 @@ class SpatialPointProcess(PoissonProcess):
     def __repr__(self):
         return "MixedPoissonProcess(" \
             "density={d}, density_kwargs={dkw})".format(
-                rf=str(self.density),
-                rkw=str(self.density_kwargs))
+                d=str(self.density),
+                dkw=str(self.density_kwargs))
 
     @property
     def density(self):
@@ -50,8 +50,8 @@ class SpatialPointProcess(PoissonProcess):
     def density(self, value):
         if ((not callable(value)) &
            (not isinstance(value, (list, tuple, np.ndarray)))):
-            raise ValueError("Density must be a callable or\
-                              n-dimensional array, list or tuple.")
+            raise ValueError("Density must be a callable or" 
+                             "n-dimensional array, list or tuple.")
         self._density = value
 
     @property
@@ -86,8 +86,8 @@ class SpatialPointProcess(PoissonProcess):
                         Unthinned = np.empty(blocksize)
                         for bound in bounds:
                             Unthinned = np.vstack((Unthinned,
-                                                  np.random.uniform(*bound,
-                                                  size=(blocksize)))
+                                                   np.random.uniform(*bound,
+                                                   size=(blocksize)))
                                                   )
                         Unthinned = Unthinned[1:, :]
                         U = np.random.uniform(size=(blocksize))
@@ -96,8 +96,8 @@ class SpatialPointProcess(PoissonProcess):
                                              Unthinned[:, U < Criteria].T))
                 elif isinstance(self.density, (list, tuple, np.ndarray)):
                     if len(self.density.shape) != len(bounds):
-                        raise ValueError(
-                    "Number of dimensions of bounds must match density array")
+                        raise ValueError("Number of dimensions of bounds must\
+                                         match density array")
                     density_max = np.amax(self.density)
                     while len(Thinned) < n:
                         Unthinned = np.empty(blocksize, dtype='int')
