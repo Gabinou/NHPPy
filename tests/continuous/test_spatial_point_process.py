@@ -2,7 +2,9 @@
 # flake8: noqa
 import pytest
 import numpy as np
+
 from stochastic.continuous import SpatialPointProcess
+
 
 def test_spatial_point_process_str_repr_1D(density_1D, density_kwargs):
     if (((not callable(density_1D)) and
@@ -91,7 +93,7 @@ def test_spatial_point_process_sample_3D(density_3D, n_fixture, bounds_3D, densi
             s = instance.sample(n_fixture, bounds_3D)
             assert len(s) == n_fixture
 
-def test_poisson_process_times(density_1D, density_kwargs, n):
+def test_poisson_process_times_1D(density_1D, density_kwargs, n):
     if (((not callable(density_1D)) and
         (not isinstance(density_1D, (list, tuple, np.ndarray)))) or
         (not isinstance(density_kwargs, dict))):
@@ -102,7 +104,7 @@ def test_poisson_process_times(density_1D, density_kwargs, n):
         with pytest.raises(AttributeError):
             times = instance.times(n)
 
-def test_poisson_process_times(density_2D, density_kwargs, n):
+def test_poisson_process_times_2D(density_2D, density_kwargs, n):
     if (((not callable(density_2D)) and
         (not isinstance(density_2D, (list, tuple, np.ndarray)))) or
         (not isinstance(density_kwargs, dict))):
@@ -113,7 +115,7 @@ def test_poisson_process_times(density_2D, density_kwargs, n):
         with pytest.raises(AttributeError):
             times = instance.times(n)
 
-def test_poisson_process_times(density_3D, density_kwargs, n):
+def test_poisson_process_times_3D(density_3D, density_kwargs, n):
     if (((not callable(density_3D)) and
         (not isinstance(density_3D, (list, tuple, np.ndarray)))) or
         (not isinstance(density_kwargs, dict))):
@@ -123,3 +125,14 @@ def test_poisson_process_times(density_3D, density_kwargs, n):
         instance = SpatialPointProcess(density_3D, density_kwargs)
         with pytest.raises(AttributeError):
             times = instance.times(n)
+
+def test_spatial_point_process_multidim(density_multidim, bounds_multidim, n_fixture):
+    instance = SpatialPointProcess(density_multidim)
+    if callable(density_multidim):
+        dim_density = instance.len_of_arg_vec_of_func(density_multidim)
+    else:
+        dim_density = len(density_multidim.shape)
+    dim_bounds = len(bounds_multidim)
+    if dim_bounds != dim_density:
+        with pytest.raises(ValueError):
+            instance.sample(n_fixture, bounds_multidim)

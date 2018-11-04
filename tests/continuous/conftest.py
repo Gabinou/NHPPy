@@ -172,39 +172,51 @@ def rate(request):
     return request.param
 
 # SpatialPointProcess
-
 # Generate multidimensional arrays representing the density.
 density_1D_Arr = np.linspace(0,3,100)
 density_2D_Arr = np.matmul(np.reshape(density_1D_Arr,(100,1)), 
                        np.reshape(density_1D_Arr,(1,100)))
 density_3D_Arr = np.matmul(np.reshape(density_2D_Arr,(100,100,1)), 
                        np.reshape(density_1D_Arr,(1,1,100)))
+def density_1D_Func(vec):
+    return(vec[0]**2)
+def density_2D_Func(vec): 
+    return(vec[0]**2+vec[1]**3)
+def density_3D_Func(vec):
+    return(vec[0]**2*vec[1]**3*vec[2])
 
-@pytest.fixture(params=[None, 0, density_1D_Arr,
-                lambda vec: vec[0]**2])
+@pytest.fixture(params=[None, 0, density_1D_Arr, density_1D_Func])
 def density_1D(request):
     return request.param
 
-@pytest.fixture(params=[None, 0, density_2D_Arr,
-                lambda vec: vec[0]**2+vec[1]**3])
+@pytest.fixture(params=[None, 0, density_2D_Arr, density_2D_Func])
 def density_2D(request):
     return request.param
 
-@pytest.fixture(params=[None, 0, density_3D_Arr,
-                lambda vec: vec[0]**2*vec[1]**3*vec[2]])
+@pytest.fixture(params=[None, 0, density_3D_Arr, density_3D_Func])
 def density_3D(request):
     return request.param
 
-@pytest.fixture(params=[None, (), [[0,3],],] )
+@pytest.fixture(params=[density_1D_Arr, density_1D_Func,
+                        density_2D_Arr, density_2D_Func,
+                        density_3D_Arr, density_3D_Func])
+def density_multidim(request):
+    return request.param
+
+@pytest.fixture(params=[None, (), [[0,3],], ([0,3],),] )
 def bounds_1D(request):
     return request.param
 
-@pytest.fixture(params=[None, (), [[0,3], [0,2],]])
+@pytest.fixture(params=[None, (), [[0,3], [0,2],], ([0,3], [0,2],),] )
 def bounds_2D(request):
     return request.param
 
-@pytest.fixture(params=[None, (), ([0,1], [0,2], [0,3]),])
+@pytest.fixture(params=[None, (), ([0,1], [0,2], [0,3]), [[0,1], [0,2], [0,3]], ])
 def bounds_3D(request):
+    return request.param
+
+@pytest.fixture(params=[[[0,3],], [[0,3], [0,2],], ([0,1], [0,2], [0,3]),])
+def bounds_multidim(request):
     return request.param
 
 @pytest.fixture(params=[None, 0, {}])
