@@ -38,8 +38,8 @@ class SpatialPointProcess(PoissonProcess):
     def __repr__(self):
         return "MixedPoissonProcess(" \
             "density={d}, density_kwargs={dkw})".format(
-                d=str(self.density),
-                dkw=str(self.density_kwargs))
+                d = str(self.density),
+                dkw = str(self.density_kwargs))
 
     @property
     def density(self):
@@ -65,19 +65,38 @@ class SpatialPointProcess(PoissonProcess):
             raise ValueError("Density kwargs must be a dict.")
         self._density_kwargs = value
 
+    def len_of_arg_vec_of_func(self, func, dim_max=100):
+        """Finds the length of the single argument vector/list/tuple of a function.
+        example: 
+        a = lambda vec: vec[0] + vec[1] + vec[2]
+        b = lambda vec: vec[0]
+        c = lambda vec: vec[0] + vec[1]
+        This outputs the len of input vec if only function objects a, b, c are given
+        """
+        dim = 0
+        for i in range(dim_max):
+            try:
+                func(range(i))
+            except:
+                dim += 1
+        return(dim)
+
     def _sample_spatial_point_process(self, n=None, bounds=(),
                                       algo='thinning', blocksize=1000):
+
         if (n is not None) & (bounds is not ()) & (bounds is not None):
+            if not isinstance(bounds[0], (list, tuple, np.ndarray)):
+                raise ValueError("bounds must be a tuple of tuple, "+
+                                 "or list of list, etc.")
             Thinned = np.empty((1, len(bounds)))
             if algo == 'thinning':
                 if callable(self.density):
-                    try:
-                        self.density(range(len(bounds)), **self.density_kwargs)
-                    except IndexError:
+                    if len(bounds) != self.len_of_arg_vec_of_func(self.density):
                         raise ValueError("Number of dimensions of bounds must\
-                                          match density function")
+                                         match density function")
                     boundstuple = []
-                    for i in bounds: boundstuple += (tuple(i),)
+                    for i in bounds:
+                        boundstuple += (tuple(i),)
                     max = scipy.optimize.minimize(lambda x: -self.density(x),
                                                   x0=[np.mean(i) for i in bounds],
                                                   bounds=boundstuple)
