@@ -83,7 +83,6 @@ class SpatialPointProcess(PoissonProcess):
 
     def _sample_spatial_point_process(self, n=None, bounds=(),
                                       algo='thinning', blocksize=1000):
-
         if (n is not None) & (bounds is not ()) & (bounds is not None):
             if not isinstance(bounds[0], (list, tuple, np.ndarray)):
                 raise ValueError("bounds must be a tuple of tuple, "+
